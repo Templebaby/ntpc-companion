@@ -229,28 +229,28 @@ tr:hover td { background: var(--gray-50); }
   </div>
   <div class="sidebar-nav">
     <div class="nav-section">主要功能</div>
-    <a href="#dashboard" class="nav-item active" id="nav-dashboard">
+    <a href="?page=dashboard" class="nav-item active" id="nav-dashboard">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
       總覽儀表板
     </a>
-    <a href="#map" class="nav-item" id="nav-map">
+    <a href="?page=map" class="nav-item" id="nav-map">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
       服務熱點地圖
     </a>
-    <a href="#records" class="nav-item" id="nav-records">
+    <a href="?page=records" class="nav-item" id="nav-records">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
       服務紀錄
     </a>
     <div class="nav-section">管理</div>
-    <a href="#roster" class="nav-item" id="nav-roster">
+    <a href="?page=roster" class="nav-item" id="nav-roster">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       陪伴員名單
     </a>
-    <a href="#settings" class="nav-item" id="nav-settings">
+    <a href="?page=settings" class="nav-item" id="nav-settings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
       服務類型設定
     </a>
-    <a href="#faillog" class="nav-item" id="nav-faillog">
+    <a href="?page=faillog" class="nav-item" id="nav-faillog">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
       姓名比對失敗紀錄
     </a>
@@ -630,16 +630,13 @@ function showPage(name){
   if(name==='records'){populateRecordFilters();filterRecords();}
   if(name==='roster'){renderRoster();}
   if(name==='faillog'){renderFailLog();}
-  closeSidebar();
-  // 更新 URL hash（不觸發頁面跳轉）
-  if(history.replaceState) history.replaceState(null,'','#'+name);
 }
 
-// Hash 變更時切換頁面（支援瀏覽器上一頁）
-window.addEventListener('hashchange', function(){
-  var page = location.hash.replace('#','') || 'dashboard';
-  showPage(page);
-});
+// 讀取 URL 參數決定顯示哪個頁面（純 URL 參數，不依賴任何 JS 事件）
+function getPageFromURL(){
+  var params = new URLSearchParams(window.location.search);
+  return params.get('page') || 'dashboard';
+}
 function toggleSidebar(){
   const sb=document.querySelector('.sidebar');
   const ov=document.getElementById('sidebar-overlay');
@@ -1096,7 +1093,8 @@ loadAllData().then(() => {
   renderRecordsTable(window._records || []);
   renderRoster();
   renderDistrictBars();
-  setTimeout(() => { updateDashboard(); }, 100);
+  // 資料載入後重新顯示正確頁面
+  showPage(getPageFromURL());
 }).catch(e => {
   console.error('資料載入失敗，使用示範資料', e);
   window._roster  = DEMO_ROSTER.slice();
@@ -1107,7 +1105,7 @@ loadAllData().then(() => {
   renderRecordsTable([]);
   renderRoster();
   renderDistrictBars();
-  setTimeout(() => { updateDashboard(); }, 100);
+  showPage(getPageFromURL());
 });
 // ── 確保所有函式為全域可用（避免 onclick 找不到函式）──
 window.showPage       = showPage;

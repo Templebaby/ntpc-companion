@@ -1097,6 +1097,28 @@ loadAllData().then(() => {
   renderDistrictBars();
   setTimeout(() => { updateDashboard(); }, 100);
 });
+// ── 確保所有函式為全域可用（避免 onclick 找不到函式）──
+window.showPage       = showPage;
+window.toggleSidebar  = toggleSidebar;
+window.closeSidebar   = closeSidebar;
+window.filterMap      = filterMap;
+window.filterRecords  = filterRecords;
+window.addPerson      = addPerson;
+window.toggleStatus   = toggleStatus;
+window.removePerson   = removePerson;
+window.batchImport    = batchImport;
+window.importExcel    = importExcel;
+window.clearExcelPreview = clearExcelPreview;
+window.confirmExcelImport = confirmExcelImport;
+window.exportRosterCSV = exportRosterCSV;
+window.exportCSV      = exportCSV;
+window.addType        = addType;
+window.delType        = delType;
+window.resetTypes     = resetTypes;
+window.selColorFn     = selColorFn;
+window.renderFailLog  = renderFailLog;
+window.clearFailLog   = clearFailLog;
+window.setRating      = typeof setRating !== 'undefined' ? setRating : undefined;
 </script>
 </body>
 </html>

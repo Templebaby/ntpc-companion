@@ -465,18 +465,22 @@ body {
 </div>
 
 <script>
-// ── 共用資料（從 localStorage 讀取，與後台共用）──
-function loadRoster() {
-  try { return JSON.parse(localStorage.getItem('ntpc_roster') || '[]'); } catch(e) { return []; }
-}
-function loadTypes() {
-  const def = ['智慧型手機教學','視訊通話陪伴','網路購物協助','健康APP使用','數位政府服務','資訊安全防詐','其他數位協助'];
-  try { return JSON.parse(localStorage.getItem('ntpc_types') || JSON.stringify(def)); } catch(e) { return def; }
-}
-function saveRecord(rec) {
-  const recs = JSON.parse(localStorage.getItem('ntpc_records') || '[]');
-  recs.unshift(rec);
-  localStorage.setItem('ntpc_records', JSON.stringify(recs));
+// ── API 設定 ──
+const API_URL = 'https://script.google.com/macros/s/AKfycbzrRjwfTX5VYTVzoFuRL5oifYZnfHtjKgaFT36AwNNw-YDGP0G43nnH_IY8lKnT_2wrew/exec';
+
+async function api(action, payload) {
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: action, payload: payload || {} }),
+    });
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error);
+    return json.data;
+  } catch(e) {
+    console.error('API 錯誤 [' + action + ']:', e);
+    throw e;
+  }
 }
 
 const DISTRICTS = ['板橋區','三重區','中和區','新莊區','新店區','永和區','土城區','蘆洲區',
@@ -488,21 +492,49 @@ let selectedPerson = null;
 let rating = 0;
 let currentStep = 1;
 
-function init() {
-  // 預設今天日期
+async function init() {
   document.getElementById('f-date').valueAsDate = new Date();
   // 填入行政區
   const distSel = document.getElementById('f-dist');
   DISTRICTS.forEach(d => { const o = document.createElement('option'); o.value = o.textContent = d; distSel.appendChild(o); });
-  // 填入服務類型
+
+  // 顯示載入中
+  document.getElementById('name-input').placeholder = '名單載入中…';
+  document.getElementById('btn-verify').disabled = true;
+
+  try {
+    // 從試算表載入名單
+    const roster = await api('getRoster');
+    window._roster = roster.map(p => ({
+      id: Number(p.id), name: String(p.name), code: String(p.code),
+      district: String(p.district || ''), community: String(p.community || ''),
+      status: String(p.status), records: Number(p.records || 0)
+    }));
+  } catch(e) {
+    window._roster = [];
+    console.warn('載入名單失敗，使用空名單');
+  }
+
+  try {
+    // 從試算表載入服務類型
+    const types = await api('getTypes');
+    window._types = types.map(t => String(t.name)).filter(Boolean);
+    if (!window._types.length) throw new Error('empty');
+  } catch(e) {
+    window._types = ['智慧型手機教學','視訊通話陪伴','網路購物協助','健康APP使用','數位政府服務','資訊安全防詐','其他數位協助'];
+  }
+
+  document.getElementById('name-input').placeholder = '請輸入全名，如：王小明';
+  document.getElementById('btn-verify').disabled = false;
   syncTypes();
 }
 
 function syncTypes() {
-  const types = loadTypes();
   const sel = document.getElementById('f-type');
   sel.innerHTML = '<option value="">請選擇服務類型</option>';
-  types.forEach(t => { const o = document.createElement('option'); o.value = o.textContent = t; sel.appendChild(o); });
+  (window._types || []).forEach(t => {
+    const o = document.createElement('option'); o.value = o.textContent = t; sel.appendChild(o);
+  });
 }
 
 // ── 姓名輸入比對 ──
@@ -524,15 +556,15 @@ function verifyName() {
   const q = normalize(raw);
   if (!q) { document.getElementById('e-person').classList.add('show'); return; }
 
-  const roster = loadRoster();
-  const active = roster.filter(p => p.status === 'active');
+  const roster = window._roster || [];
+  const active = roster.filter(p => String(p.status) === 'active');
 
   // 完全符合
   const exact = active.find(p => normalize(p.name) === q);
   if (exact) { confirmPerson(exact); return; }
 
   // 停用陪伴員
-  const disabled = roster.find(p => p.status !== 'active' && normalize(p.name) === q);
+  const disabled = roster.find(p => String(p.status) !== 'active' && normalize(p.name) === q);
   if (disabled) {
     showError(`「${q}」的帳號目前已停用，請聯繫管理員。`);
     logFailedAttempt(q, 'disabled');
@@ -615,10 +647,8 @@ function reenterName() {
 }
 
 function logFailedAttempt(name, reason) {
-  const logs = JSON.parse(localStorage.getItem('ntpc_failed_attempts') || '[]');
-  logs.unshift({ name, reason, time: new Date().toISOString() });
-  if (logs.length > 200) logs.splice(200);
-  localStorage.setItem('ntpc_failed_attempts', JSON.stringify(logs));
+  api('addFailLog', { name: name, reason: reason, time: new Date().toISOString() })
+    .catch(e => console.warn('記錄失敗嘗試時發生錯誤', e));
 }
 
 // ── 步驟切換 ──
@@ -662,7 +692,11 @@ function setRating(n) {
 }
 
 // ── 送出 ──
-function submitForm() {
+async function submitForm() {
+  const btn = document.querySelector('#panel3 .btn-primary');
+  btn.disabled = true;
+  btn.textContent = '送出中…';
+
   const rec = {
     id: Date.now(),
     date: document.getElementById('f-date').value,
@@ -680,12 +714,18 @@ function submitForm() {
     status: 'completed',
     createdAt: new Date().toISOString()
   };
-  saveRecord(rec);
 
-  // 更新名單本月筆數
-  const roster = loadRoster();
-  const idx = roster.findIndex(p => p.id === selectedPerson.id);
-  if (idx >= 0) { roster[idx].records = (roster[idx].records || 0) + 1; localStorage.setItem('ntpc_roster', JSON.stringify(roster)); }
+  try {
+    await api('addRecord', rec);
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = '送出紀錄';
+    alert('紀錄送出失敗，請確認網路連線後重試。\n錯誤：' + e.message);
+    return;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '送出紀錄';
 
   document.getElementById('done-summary').innerHTML = [
     ['陪伴員', rec.name],
@@ -720,21 +760,6 @@ function resetAll() {
 
 init();
 
-// 若名單為空，預設加入示範資料
-if (!localStorage.getItem('ntpc_roster')) {
-  const demo = [
-    {id:1,name:'王小明',code:'DC-0001',district:'板橋區',status:'active',records:12},
-    {id:2,name:'李美華',code:'DC-0002',district:'三重區',status:'active',records:9},
-    {id:3,name:'陳建國',code:'DC-0003',district:'新店區',status:'active',records:15},
-    {id:4,name:'林雅婷',code:'DC-0004',district:'中和區',status:'active',records:7},
-    {id:5,name:'張文雄',code:'DC-0005',district:'新莊區',status:'active',records:11},
-    {id:6,name:'吳淑芬',code:'DC-0006',district:'永和區',status:'active',records:8},
-    {id:7,name:'黃志偉',code:'DC-0007',district:'土城區',status:'inactive',records:0},
-    {id:8,name:'蔡佳穎',code:'DC-0008',district:'蘆洲區',status:'active',records:6},
-  ];
-  localStorage.setItem('ntpc_roster', JSON.stringify(demo));
-  localStorage.setItem('ntpc_next_id', '9');
-}
 </script>
 </body>
 </html>

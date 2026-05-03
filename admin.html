@@ -217,6 +217,48 @@ tr:hover td { background: var(--gray-50); }
   .card { padding: 14px 12px; }
 }
 </style>
+<script>
+// 核心導覽函式 - 放在 head 最早執行
+function showPage(name) {
+  var pages = ['dashboard','map','records','roster','settings','faillog'];
+  pages.forEach(function(p) {
+    var el = document.getElementById('page-' + p);
+    if (el) el.style.display = (p === name) ? 'block' : 'none';
+    var nav = document.getElementById('nav-' + p);
+    if (nav) {
+      nav.className = nav.className.replace(' active','');
+      if (p === name) nav.className += ' active';
+    }
+  });
+  var titleMap = {
+    dashboard:'總覽儀表板', map:'服務熱點地圖', records:'服務紀錄',
+    roster:'陪伴員名單管理', settings:'服務類型設定', faillog:'姓名比對失敗紀錄'
+  };
+  var titleEl = document.getElementById('topbar-title');
+  if (titleEl) titleEl.textContent = titleMap[name] || name;
+
+  if (name === 'map' && !window.mapInit) { setTimeout(initMap, 60); window.mapInit = true; }
+  if (name === 'dashboard') { setTimeout(function(){ if(typeof updateDashboard==='function') updateDashboard(); }, 100); }
+  if (name === 'records') { if(typeof populateRecordFilters==='function') populateRecordFilters(); if(typeof filterRecords==='function') filterRecords(); }
+  if (name === 'roster') { if(typeof renderRoster==='function') renderRoster(); }
+  if (name === 'faillog') { if(typeof renderFailLog==='function') renderFailLog(); }
+  if (typeof closeSidebar === 'function') closeSidebar();
+  window._currentPage = name;
+}
+
+// 頁面載入後綁定導覽點擊
+document.addEventListener('DOMContentLoaded', function() {
+  // 綁定所有導覽連結
+  document.querySelectorAll('[data-page]').forEach(function(el) {
+    el.addEventListener('click', function(e) {
+      e.preventDefault();
+      showPage(this.getAttribute('data-page'));
+    });
+  });
+  // 預設顯示儀表板
+  showPage('dashboard');
+});
+</script>
 </head>
 <body>
 
@@ -229,28 +271,28 @@ tr:hover td { background: var(--gray-50); }
   </div>
   <div class="sidebar-nav">
     <div class="nav-section">主要功能</div>
-    <a href="?page=dashboard" class="nav-item active" id="nav-dashboard">
+    <a href="javascript:void(0)" data-page="dashboard" class="nav-item active" id="nav-dashboard">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
       總覽儀表板
     </a>
-    <a href="?page=map" class="nav-item" id="nav-map">
+    <a href="javascript:void(0)" data-page="map" class="nav-item" id="nav-map">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
       服務熱點地圖
     </a>
-    <a href="?page=records" class="nav-item" id="nav-records">
+    <a href="javascript:void(0)" data-page="records" class="nav-item" id="nav-records">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
       服務紀錄
     </a>
     <div class="nav-section">管理</div>
-    <a href="?page=roster" class="nav-item" id="nav-roster">
+    <a href="javascript:void(0)" data-page="roster" class="nav-item" id="nav-roster">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       陪伴員名單
     </a>
-    <a href="?page=settings" class="nav-item" id="nav-settings">
+    <a href="javascript:void(0)" data-page="settings" class="nav-item" id="nav-settings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
       服務類型設定
     </a>
-    <a href="?page=faillog" class="nav-item" id="nav-faillog">
+    <a href="javascript:void(0)" data-page="faillog" class="nav-item" id="nav-faillog">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
       姓名比對失敗紀錄
     </a>
@@ -275,7 +317,7 @@ tr:hover td { background: var(--gray-50); }
   <div class="content">
 
     <!-- ── 儀表板 ── -->
-    <div id="page-dashboard" class="page active">
+    <div id="page-dashboard" class="page" style="display:block;">
       <div class="metric-grid">
         <div class="metric-card">
           <div class="metric-label">本月服務人次</div>
@@ -323,7 +365,7 @@ tr:hover td { background: var(--gray-50); }
     </div>
 
     <!-- ── 地圖 ── -->
-    <div id="page-map" class="page">
+    <div id="page-map" class="page" style="display:none;">
       <div class="page-header">
         <h1>服務熱點地圖</h1>
         <p>圓圈大小與深淺代表各行政區服務量，滑鼠移到圓圈可查看詳情</p>
@@ -343,7 +385,7 @@ tr:hover td { background: var(--gray-50); }
     </div>
 
     <!-- ── 服務紀錄 ── -->
-    <div id="page-records" class="page">
+    <div id="page-records" class="page" style="display:none;">
       <div class="page-header">
         <h1>服務紀錄</h1>
         <p>所有陪伴員填寫的服務紀錄，可依條件篩選</p>
@@ -373,7 +415,7 @@ tr:hover td { background: var(--gray-50); }
     </div>
 
     <!-- ── 陪伴員名單 ── -->
-    <div id="page-roster" class="page">
+    <div id="page-roster" class="page" style="display:none;">
       <div class="page-header">
         <h1>陪伴員名單管理</h1>
         <p>管理所有陪伴員，名單變更後前台填寫頁面的搜尋選單會即時同步</p>
@@ -486,7 +528,7 @@ tr:hover td { background: var(--gray-50); }
     </div>
 
     <!-- ── 姓名比對失敗紀錄 ── -->
-    <div id="page-faillog" class="page">
+    <div id="page-faillog" class="page" style="display:none;">
       <div class="page-header">
         <h1>姓名比對失敗紀錄</h1>
         <p>陪伴員在前台填寫時，輸入的姓名無法比對到名單的紀錄。可藉此發現名單缺漏或常見輸入錯誤。</p>
@@ -508,7 +550,7 @@ tr:hover td { background: var(--gray-50); }
     </div>
 
     <!-- ── 服務類型設定 ── 
-    <div id="page-settings" class="page">
+    <div id="page-settings" class="page" style="display:none;">
       <div class="page-header">
         <h1>服務類型設定</h1>
         <p>新增或刪除服務類型，變更後即時同步到前台填寫頁面的選單</p>
@@ -615,22 +657,7 @@ async function loadAllData() {
 // ── 頁面切換 ──
 const pageTitles = {dashboard:'總覽儀表板',map:'服務熱點地圖',records:'服務紀錄',roster:'陪伴員名單管理',settings:'服務類型設定',faillog:'姓名比對失敗紀錄'};
 let mapInit=false;
-function showPage(name){
-  if(!name||!document.getElementById('page-'+name)) name='dashboard';
-  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
-  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
-  var pageEl = document.getElementById('page-'+name);
-  if(pageEl) pageEl.classList.add('active');
-  var navEl = document.getElementById('nav-'+name);
-  if(navEl) navEl.classList.add('active');
-  var titleEl = document.getElementById('topbar-title');
-  if(titleEl) titleEl.textContent = pageTitles[name]||name;
-  if(name==='map'&&!mapInit){setTimeout(initMap,60);mapInit=true;}
-  if(name==='dashboard'){setTimeout(function(){updateDashboard();},50);}
-  if(name==='records'){populateRecordFilters();filterRecords();}
-  if(name==='roster'){renderRoster();}
-  if(name==='faillog'){renderFailLog();}
-}
+// showPage defined in <head>
 
 // 讀取 URL 參數決定顯示哪個頁面（純 URL 參數，不依賴任何 JS 事件）
 function getPageFromURL(){

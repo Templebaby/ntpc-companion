@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="服務紀錄"/>
+<title>數位陪伴員｜服務紀錄填寫</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --blue: #1a56db;
+  --blue-light: #e8f0fe;
+  --blue-dark: #1240a8;
+  --green: #0f7a3e;
+  --green-light: #e6f4ec;
+  --red: #c0392b;
+  --red-light: #fdecea;
+  --gray-50: #f8f9fb;
+  --gray-100: #f0f2f5;
+  --gray-200: #e2e6ec;
+  --gray-400: #9ba3af;
+  --gray-600: #4b5563;
+  --gray-800: #1f2937;
+  --text: #1f2937;
+  --text-muted: #6b7280;
+  --border: #e2e6ec;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 1px 4px rgba(0,0,0,.08);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Noto Sans TC', sans-serif;
+  background: var(--gray-50);
+  color: var(--text);
+  min-height: 100vh;
+}
+.app-bar {
+  background: var(--blue);
+  color: white;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.app-bar-icon {
+  width: 32px; height: 32px;
+  background: rgba(255,255,255,.2);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+}
+.app-bar-icon svg { width: 18px; height: 18px; }
+.app-bar-title { font-size: 16px; font-weight: 700; }
+.app-bar-sub { font-size: 12px; opacity: .75; margin-top: 1px; }
+.app-bar-spacer { flex: 1; }
+.app-bar-link {
+  font-size: 12px; color: rgba(255,255,255,.8);
+  text-decoration: none; padding: 6px 12px;
+  border: 1px solid rgba(255,255,255,.3); border-radius: 20px;
+}
+
+.container { max-width: 540px; margin: 0 auto; padding: 20px 16px 40px; }
+
+/* 步驟進度條 */
+.step-bar {
+  display: flex; align-items: center;
+  margin-bottom: 28px; padding: 0 4px;
+}
+.step-item { display: flex; align-items: center; gap: 8px; flex: 1; }
+.step-circle {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; flex-shrink: 0;
+  border: 2px solid var(--gray-200);
+  background: white; color: var(--gray-400);
+  transition: all .3s;
+}
+.step-circle.active { background: var(--blue); border-color: var(--blue); color: white; }
+.step-circle.done { background: var(--green); border-color: var(--green); color: white; }
+.step-circle.done::after { content: '✓'; font-size: 11px; }
+.step-circle.done span { display: none; }
+.step-label { font-size: 12px; color: var(--text-muted); }
+.step-label.active { color: var(--blue); font-weight: 500; }
+.step-line { flex: 1; height: 2px; background: var(--gray-200); margin: 0 4px; transition: background .3s; }
+.step-line.done { background: var(--green); }
+
+/* 卡片 */
+.card {
+  background: white; border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 20px; margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+.card-title {
+  font-size: 15px; font-weight: 700; color: var(--text);
+  margin-bottom: 16px; padding-bottom: 12px;
+  border-bottom: 1px solid var(--gray-100);
+  display: flex; align-items: center; gap: 8px;
+}
+.card-title-icon {
+  width: 28px; height: 28px; border-radius: 8px;
+  background: var(--blue-light); display: flex;
+  align-items: center; justify-content: center;
+}
+.card-title-icon svg { width: 14px; height: 14px; stroke: var(--blue); }
+
+/* 표단 */
+.field { margin-bottom: 16px; }
+.field:last-child { margin-bottom: 0; }
+.field label {
+  display: block; font-size: 13px; font-weight: 500;
+  color: var(--gray-600); margin-bottom: 6px;
+}
+.field label .req { color: var(--red); margin-left: 2px; }
+.field input, .field select, .field textarea {
+  width: 100%; padding: 11px 14px;
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  font-size: 15px; font-family: inherit; color: var(--text);
+  background: white; transition: border-color .2s, box-shadow .2s;
+  appearance: none; -webkit-appearance: none;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none; border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(26,86,219,.12);
+}
+.field select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center;
+  padding-right: 36px;
+}
+.field textarea { min-height: 88px; resize: vertical; line-height: 1.6; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.field-hint { font-size: 12px; color: var(--text-muted); margin-top: 5px; }
+.field-err { font-size: 12px; color: var(--red); margin-top: 5px; display: none; }
+.field-err.show { display: block; }
+
+/* 搜尋式下拉 */
+.name-input-wrap { display: flex; gap: 8px; }
+.name-input-wrap input { flex: 1; }
+.btn-verify {
+  padding: 11px 18px; background: var(--blue); color: white;
+  border: none; border-radius: var(--radius-sm); font-size: 14px;
+  font-weight: 700; cursor: pointer; font-family: inherit;
+  white-space: nowrap; transition: background .2s;
+  flex-shrink: 0;
+}
+.btn-verify:hover { background: var(--blue-dark); }
+.btn-verify:disabled { background: var(--gray-200); color: var(--gray-400); cursor: not-allowed; }
+.verify-result {
+  margin-top: 8px; border-radius: var(--radius-sm);
+  padding: 10px 14px; display: none;
+}
+.verify-result.success {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--green-light); border: 1.5px solid #a7d7b8;
+}
+.verify-result.error {
+  display: block;
+  background: var(--red-light); border: 1.5px solid #f5a5a5;
+  font-size: 13px; color: var(--red); line-height: 1.6;
+}
+.verify-result.similar {
+  display: block;
+  background: #fff8e6; border: 1.5px solid #f5c842;
+  font-size: 13px; color: #7a5c00;
+}
+.verify-name { font-size: 14px; font-weight: 700; color: var(--green); }
+.verify-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.verify-badge {
+  font-size: 11px; font-weight: 500; padding: 3px 10px;
+  background: var(--green); color: white; border-radius: 20px;
+  white-space: nowrap;
+}
+.btn-reenter {
+  margin-top: 8px; font-size: 12px; color: var(--blue);
+  background: none; border: none; cursor: pointer; padding: 0;
+  text-decoration: underline; font-family: inherit;
+}
+.similar-list { margin-top: 6px; display: flex; flex-direction: column; gap: 4px; }
+.similar-item {
+  padding: 8px 12px; background: white; border-radius: 6px;
+  border: 1px solid #f5c842; cursor: pointer; font-size: 13px;
+  display: flex; justify-content: space-between; align-items: center;
+  transition: background .15s;
+}
+.similar-item:hover { background: #fffbf0; }
+.similar-item-name { font-weight: 500; color: var(--text); }
+.similar-item-meta { font-size: 11px; color: var(--text-muted); }
+
+/* 評分按鈕 */
+.rating-row { display: flex; gap: 8px; }
+.rating-btn {
+  flex: 1; padding: 10px 4px; text-align: center;
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  cursor: pointer; background: white; transition: all .2s;
+  font-size: 14px; font-weight: 500; color: var(--text-muted);
+}
+.rating-btn .sub { font-size: 10px; display: block; margin-top: 2px; color: var(--text-muted); }
+.rating-btn:hover { border-color: var(--blue); color: var(--blue); }
+.rating-btn.sel { background: var(--blue); border-color: var(--blue); color: white; }
+.rating-btn.sel .sub { color: rgba(255,255,255,.8); }
+
+/* 按鈕 */
+.btn-row { display: flex; gap: 10px; margin-top: 20px; }
+.btn-primary {
+  flex: 1; padding: 14px; background: var(--blue); color: white;
+  border: none; border-radius: var(--radius-sm); font-size: 15px;
+  font-weight: 700; cursor: pointer; font-family: inherit;
+  transition: background .2s, transform .1s;
+}
+.btn-primary:hover { background: var(--blue-dark); }
+.btn-primary:active { transform: scale(.98); }
+.btn-back {
+  padding: 14px 20px; background: white; color: var(--text-muted);
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  font-size: 15px; cursor: pointer; font-family: inherit;
+  transition: all .2s;
+}
+.btn-back:hover { border-color: var(--gray-400); color: var(--text); }
+
+/* 步驟面板 */
+.panel { display: none; animation: fadeIn .25s ease; }
+.panel.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* 完成畫面 */
+.done-box { text-align: center; padding: 16px 0; }
+.done-icon {
+  width: 64px; height: 64px; background: var(--green-light);
+  border-radius: 50%; margin: 0 auto 16px;
+  display: flex; align-items: center; justify-content: center;
+}
+.done-icon svg { width: 32px; height: 32px; stroke: var(--green); }
+.done-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+.done-sub { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; }
+.done-summary {
+  background: var(--gray-50); border-radius: var(--radius-sm);
+  padding: 14px 16px; text-align: left; margin-bottom: 20px;
+}
+.summary-row {
+  display: flex; justify-content: space-between;
+  font-size: 13px; padding: 5px 0;
+  border-bottom: 1px solid var(--gray-100);
+}
+.summary-row:last-child { border-bottom: none; }
+.summary-label { color: var(--text-muted); }
+.summary-val { font-weight: 500; color: var(--text); }
+.btn-again {
+  display: inline-block; padding: 12px 28px;
+  background: var(--blue); color: white; border: none;
+  border-radius: var(--radius-sm); font-size: 14px; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+}
+
+/* 響應式 */
+@media (max-width: 480px) {
+  .field-row { grid-template-columns: 1fr; }
+  .rating-btn { padding: 8px 2px; font-size: 13px; }
+}
+</style>
+</head>
+<body>
+
+<div class="app-bar">
+  <div class="app-bar-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+    </svg>
+  </div>
+  <div>
+    <div class="app-bar-title">服務紀錄填寫</div>
+    <div class="app-bar-sub">新北市數位陪伴員</div>
+  </div>
+  <div class="app-bar-spacer"></div>
+  <a href="admin.html" class="app-bar-link">管理後台</a>
+</div>
+
+<div class="container">
+
+  <!-- 步驟進度條 -->
+  <div class="step-bar">
+    <div class="step-item">
+      <div class="step-circle active" id="sc1"><span>1</span></div>
+      <span class="step-label active" id="sl1">陪伴員資訊</span>
+    </div>
+    <div class="step-line" id="ln1"></div>
+    <div class="step-item">
+      <div class="step-circle" id="sc2"><span>2</span></div>
+      <span class="step-label" id="sl2">服務內容</span>
+    </div>
+    <div class="step-line" id="ln2"></div>
+    <div class="step-item">
+      <div class="step-circle" id="sc3"><span>3</span></div>
+      <span class="step-label" id="sl3">摘要與評分</span>
+    </div>
+  </div>
+
+  <!-- Step 1：陪伴員資訊 -->
+  <div id="panel1" class="panel active">
+    <div class="card">
+      <div class="card-title">
+        <div class="card-title-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        </div>
+        陪伴員資訊
+      </div>
+
+      <div class="field">
+        <label>您的姓名<span class="req">*</span></label>
+        <div class="name-input-wrap">
+          <input type="text" id="name-input" placeholder="請輸入全名，如：王小明"
+            autocomplete="off" maxlength="20"
+            oninput="onNameInput()" onkeydown="if(event.key==='Enter'){event.preventDefault();verifyName();}"/>
+          <button class="btn-verify" id="btn-verify" onclick="verifyName()">確認</button>
+        </div>
+        <div class="verify-result" id="verify-success">
+          <div>
+            <div class="verify-name" id="sel-name"></div>
+            <div class="verify-meta" id="sel-code"></div>
+          </div>
+          <span class="verify-badge">✓ 已確認</span>
+        </div>
+        <div class="verify-result" id="verify-error">
+          <div id="verify-error-msg"></div>
+          <button class="btn-reenter" onclick="reenterName()">重新輸入</button>
+        </div>
+        <div class="verify-result" id="verify-similar">
+          <div>找到相似姓名，請確認是您嗎？</div>
+          <div class="similar-list" id="similar-list"></div>
+          <button class="btn-reenter" onclick="reenterName()">都不是，重新輸入</button>
+        </div>
+        <div class="field-hint" id="name-hint">請輸入與建檔相符的全名，輸入後點「確認」比對名單</div>
+        <div class="field-err" id="e-person">請確認您的姓名</div>
+      </div>
+
+      <div class="field">
+        <label>服務日期<span class="req">*</span></label>
+        <input type="date" id="f-date"/>
+        <div class="field-err" id="e-date">請選擇日期</div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-primary" onclick="goStep(2)">下一步 →</button>
+    </div>
+  </div>
+
+  <!-- Step 2：服務內容 -->
+  <div id="panel2" class="panel">
+    <div class="card">
+      <div class="card-title">
+        <div class="card-title-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </div>
+        服務內容
+      </div>
+
+      <div class="field">
+        <label>服務行政區<span class="req">*</span></label>
+        <select id="f-dist"><option value="">請選擇行政區</option></select>
+        <div class="field-err" id="e-dist">請選擇行政區</div>
+      </div>
+
+      <div class="field">
+        <label>社區 / 機構名稱</label>
+        <input type="text" id="f-comm" placeholder="如：板橋三民社區活動中心"/>
+      </div>
+
+      <div class="field">
+        <label>服務類型<span class="req">*</span></label>
+        <select id="f-type"><option value="">請選擇服務類型</option></select>
+        <div class="field-err" id="e-type">請選擇服務類型</div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>服務對象年齡</label>
+          <select id="f-age">
+            <option value="">請選擇</option>
+            <option>60–64 歲</option><option>65–69 歲</option>
+            <option>70–74 歲</option><option>75–79 歲</option>
+            <option>80 歲以上</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>服務人數<span class="req">*</span></label>
+          <input type="number" id="f-count" min="1" max="99" placeholder="人數"/>
+          <div class="field-err" id="e-count">請輸入人數</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>服務時數<span class="req">*</span></label>
+        <select id="f-hours">
+          <option value="">請選擇</option>
+          <option value="0.5">0.5 小時</option><option value="1">1 小時</option>
+          <option value="1.5">1.5 小時</option><option value="2">2 小時</option>
+          <option value="2.5">2.5 小時</option><option value="3">3 小時</option>
+          <option value="4">4 小時以上</option>
+        </select>
+        <div class="field-err" id="e-hours">請選擇服務時數</div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-back" onclick="goStep(1)">← 上一步</button>
+      <button class="btn-primary" onclick="goStep(3)">下一步 →</button>
+    </div>
+  </div>
+
+  <!-- Step 3：摘要與評分 -->
+  <div id="panel3" class="panel">
+    <div class="card">
+      <div class="card-title">
+        <div class="card-title-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        服務摘要與評分
+      </div>
+
+      <div class="field">
+        <label>服務摘要</label>
+        <textarea id="f-notes" placeholder="請簡述本次服務內容、長輩學習情形、遇到的問題等…（可略過）"></textarea>
+      </div>
+
+      <div class="field">
+        <label>長輩滿意度評分</label>
+        <div class="rating-row" id="rating-row">
+          <div class="rating-btn" onclick="setRating(1)">1<span class="sub">很差</span></div>
+          <div class="rating-btn" onclick="setRating(2)">2<span class="sub">差</span></div>
+          <div class="rating-btn" onclick="setRating(3)">3<span class="sub">普通</span></div>
+          <div class="rating-btn" onclick="setRating(4)">4<span class="sub">好</span></div>
+          <div class="rating-btn" onclick="setRating(5)">5<span class="sub">很好</span></div>
+        </div>
+        <div class="field-hint">若長輩無法評分可略過</div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-back" onclick="goStep(2)">← 上一步</button>
+      <button class="btn-primary" onclick="submitForm()">送出紀錄</button>
+    </div>
+  </div>
+
+  <!-- 完成畫面 -->
+  <div id="panel-done" class="panel">
+    <div class="card">
+      <div class="done-box">
+        <div class="done-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="done-title">紀錄送出成功！</div>
+        <div class="done-sub">感謝您今天的服務，紀錄已成功送出。</div>
+        <div class="done-summary" id="done-summary"></div>
+        <button class="btn-again" onclick="resetAll()">再填一筆</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── 共用資料（從 localStorage 讀取，與後台共用）──
+function loadRoster() {
+  try { return JSON.parse(localStorage.getItem('ntpc_roster') || '[]'); } catch(e) { return []; }
+}
+function loadTypes() {
+  const def = ['智慧型手機教學','視訊通話陪伴','網路購物協助','健康APP使用','數位政府服務','資訊安全防詐','其他數位協助'];
+  try { return JSON.parse(localStorage.getItem('ntpc_types') || JSON.stringify(def)); } catch(e) { return def; }
+}
+function saveRecord(rec) {
+  const recs = JSON.parse(localStorage.getItem('ntpc_records') || '[]');
+  recs.unshift(rec);
+  localStorage.setItem('ntpc_records', JSON.stringify(recs));
+}
+
+const DISTRICTS = ['板橋區','三重區','中和區','新莊區','新店區','永和區','土城區','蘆洲區',
+  '樹林區','汐止區','鶯歌區','泰山區','五股區','林口區','深坑區','八里區',
+  '淡水區','三峽區','瑞芳區','石碇區','坪林區','金山區','萬里區','貢寮區',
+  '雙溪區','平溪區','烏來區','三芝區','石門區'];
+
+let selectedPerson = null;
+let rating = 0;
+let currentStep = 1;
+
+function init() {
+  // 預設今天日期
+  document.getElementById('f-date').valueAsDate = new Date();
+  // 填入行政區
+  const distSel = document.getElementById('f-dist');
+  DISTRICTS.forEach(d => { const o = document.createElement('option'); o.value = o.textContent = d; distSel.appendChild(o); });
+  // 填入服務類型
+  syncTypes();
+}
+
+function syncTypes() {
+  const types = loadTypes();
+  const sel = document.getElementById('f-type');
+  sel.innerHTML = '<option value="">請選擇服務類型</option>';
+  types.forEach(t => { const o = document.createElement('option'); o.value = o.textContent = t; sel.appendChild(o); });
+}
+
+// ── 姓名輸入比對 ──
+function normalize(s) {
+  // 去除前後空白、統一全形轉半形、轉繁體統一
+  return s.trim().replace(/\s+/g, '');
+}
+
+function onNameInput() {
+  // 若已確認過，輸入改變就重設狀態
+  if (selectedPerson) reenterName();
+  document.getElementById('verify-error').style.display = 'none';
+  document.getElementById('verify-similar').style.display = 'none';
+  document.getElementById('e-person').classList.remove('show');
+}
+
+function verifyName() {
+  const raw = document.getElementById('name-input').value;
+  const q = normalize(raw);
+  if (!q) { document.getElementById('e-person').classList.add('show'); return; }
+
+  const roster = loadRoster();
+  const active = roster.filter(p => p.status === 'active');
+
+  // 完全符合
+  const exact = active.find(p => normalize(p.name) === q);
+  if (exact) { confirmPerson(exact); return; }
+
+  // 停用陪伴員
+  const disabled = roster.find(p => p.status !== 'active' && normalize(p.name) === q);
+  if (disabled) {
+    showError(`「${q}」的帳號目前已停用，請聯繫管理員。`);
+    logFailedAttempt(q, 'disabled');
+    return;
+  }
+
+  // 模糊比對：包含關係 or 編輯距離 ≤ 1
+  const similar = active.filter(p => {
+    const pn = normalize(p.name);
+    if (pn.includes(q) || q.includes(pn)) return true;
+    // 編輯距離 1（一個字不同）
+    if (Math.abs(pn.length - q.length) <= 1) {
+      let diff = 0;
+      const short = pn.length <= q.length ? pn : q;
+      const long  = pn.length <= q.length ? q : pn;
+      for (let i = 0, j = 0; i < long.length; i++) {
+        if (long[i] !== short[j]) diff++; else j++;
+        if (diff > 1) break;
+      }
+      if (diff <= 1) return true;
+    }
+    return false;
+  });
+
+  if (similar.length === 1) {
+    // 只有一個相似，直接建議
+    showSimilar(similar, q);
+  } else if (similar.length > 1) {
+    showSimilar(similar, q);
+  } else {
+    showError(`找不到「${q}」，請確認姓名是否正確，或聯繫管理員確認是否已建檔。`);
+    logFailedAttempt(q, 'not_found');
+  }
+}
+
+function confirmPerson(p) {
+  selectedPerson = p;
+  document.getElementById('name-input').disabled = true;
+  document.getElementById('btn-verify').disabled = true;
+  document.getElementById('verify-error').style.display = 'none';
+  document.getElementById('verify-similar').style.display = 'none';
+  document.getElementById('name-hint').style.display = 'none';
+  document.getElementById('sel-name').textContent = p.name;
+  document.getElementById('sel-code').textContent = `編號：${p.code}${p.district ? '　' + p.district : ''}${p.community ? '　' + p.community : ''}`;
+  document.getElementById('verify-success').className = 'verify-result success';
+  document.getElementById('e-person').classList.remove('show');
+  // 自動預選行政區
+  if (p.district) document.getElementById('f-dist').value = p.district;
+}
+
+function showError(msg) {
+  document.getElementById('verify-error-msg').textContent = msg;
+  document.getElementById('verify-error').className = 'verify-result error';
+  document.getElementById('verify-success').className = 'verify-result';
+  document.getElementById('verify-similar').style.display = 'none';
+}
+
+function showSimilar(list, q) {
+  document.getElementById('verify-success').className = 'verify-result';
+  document.getElementById('verify-error').style.display = 'none';
+  document.getElementById('similar-list').innerHTML = list.map(p =>
+    `<div class="similar-item" onclick="confirmPerson(${JSON.stringify(p).replace(/"/g,'&quot;')})">
+      <span class="similar-item-name">${p.name}</span>
+      <span class="similar-item-meta">${p.code}${p.district ? '｜' + p.district : ''}</span>
+    </div>`
+  ).join('');
+  document.getElementById('verify-similar').className = 'verify-result similar';
+}
+
+function reenterName() {
+  selectedPerson = null;
+  document.getElementById('name-input').disabled = false;
+  document.getElementById('btn-verify').disabled = false;
+  document.getElementById('name-input').value = '';
+  document.getElementById('name-input').focus();
+  document.getElementById('verify-success').className = 'verify-result';
+  document.getElementById('verify-error').style.display = 'none';
+  document.getElementById('verify-similar').style.display = 'none';
+  document.getElementById('name-hint').style.display = 'block';
+}
+
+function logFailedAttempt(name, reason) {
+  const logs = JSON.parse(localStorage.getItem('ntpc_failed_attempts') || '[]');
+  logs.unshift({ name, reason, time: new Date().toISOString() });
+  if (logs.length > 200) logs.splice(200);
+  localStorage.setItem('ntpc_failed_attempts', JSON.stringify(logs));
+}
+
+// ── 步驟切換 ──
+function goStep(n) {
+  if (n > currentStep && !validate(currentStep)) return;
+  currentStep = n;
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel' + n).classList.add('active');
+  [1,2,3].forEach(i => {
+    const sc = document.getElementById('sc' + i);
+    sc.className = 'step-circle' + (i < n ? ' done' : i === n ? ' active' : '');
+    document.getElementById('sl' + i).className = 'step-label' + (i === n ? ' active' : '');
+    const ln = document.getElementById('ln' + i);
+    if (ln) ln.className = 'step-line' + (i < n ? ' done' : '');
+  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function validate(step) {
+  let ok = true;
+  const hide = id => document.getElementById(id).classList.remove('show');
+  const show = id => { document.getElementById(id).classList.add('show'); ok = false; };
+
+  if (step === 1) {
+    if (!selectedPerson) show('e-person'); else hide('e-person');
+    if (!document.getElementById('f-date').value) show('e-date'); else hide('e-date');
+  }
+  if (step === 2) {
+    if (!document.getElementById('f-dist').value) show('e-dist'); else hide('e-dist');
+    if (!document.getElementById('f-type').value) show('e-type'); else hide('e-type');
+    if (!document.getElementById('f-count').value) show('e-count'); else hide('e-count');
+    if (!document.getElementById('f-hours').value) show('e-hours'); else hide('e-hours');
+  }
+  return ok;
+}
+
+// ── 評分 ──
+function setRating(n) {
+  rating = n;
+  document.querySelectorAll('.rating-btn').forEach((b, i) => b.classList.toggle('sel', i < n));
+}
+
+// ── 送出 ──
+function submitForm() {
+  const rec = {
+    id: Date.now(),
+    date: document.getElementById('f-date').value,
+    personId: selectedPerson.id,
+    name: selectedPerson.name,
+    code: selectedPerson.code,
+    district: document.getElementById('f-dist').value,
+    community: document.getElementById('f-comm').value,
+    type: document.getElementById('f-type').value,
+    age: document.getElementById('f-age').value,
+    count: parseInt(document.getElementById('f-count').value),
+    hours: parseFloat(document.getElementById('f-hours').value),
+    notes: document.getElementById('f-notes').value,
+    rating: rating,
+    status: 'completed',
+    createdAt: new Date().toISOString()
+  };
+  saveRecord(rec);
+
+  // 更新名單本月筆數
+  const roster = loadRoster();
+  const idx = roster.findIndex(p => p.id === selectedPerson.id);
+  if (idx >= 0) { roster[idx].records = (roster[idx].records || 0) + 1; localStorage.setItem('ntpc_roster', JSON.stringify(roster)); }
+
+  document.getElementById('done-summary').innerHTML = [
+    ['陪伴員', rec.name],
+    ['日期', rec.date],
+    ['行政區', rec.district],
+    ['服務類型', rec.type],
+    ['服務人數', rec.count + ' 人'],
+    ['服務時數', rec.hours + ' 小時'],
+    ['滿意度', rec.rating ? rec.rating + ' 分' : '未填'],
+  ].map(([l,v]) => `<div class="summary-row"><span class="summary-label">${l}</span><span class="summary-val">${v}</span></div>`).join('');
+
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-done').classList.add('active');
+  [1,2,3].forEach(i => {
+    document.getElementById('sc' + i).className = 'step-circle done';
+    const ln = document.getElementById('ln' + i); if (ln) ln.className = 'step-line done';
+  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function resetAll() {
+  selectedPerson = null; rating = 0; currentStep = 1;
+  reenterName();
+  ['f-date','f-dist','f-comm','f-type','f-age','f-count','f-hours','f-notes'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('f-date').valueAsDate = new Date();
+  document.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('sel'));
+  document.querySelectorAll('.field-err').forEach(e => e.classList.remove('show'));
+  goStep(1);
+}
+
+init();
+
+// 若名單為空，預設加入示範資料
+if (!localStorage.getItem('ntpc_roster')) {
+  const demo = [
+    {id:1,name:'王小明',code:'DC-0001',district:'板橋區',status:'active',records:12},
+    {id:2,name:'李美華',code:'DC-0002',district:'三重區',status:'active',records:9},
+    {id:3,name:'陳建國',code:'DC-0003',district:'新店區',status:'active',records:15},
+    {id:4,name:'林雅婷',code:'DC-0004',district:'中和區',status:'active',records:7},
+    {id:5,name:'張文雄',code:'DC-0005',district:'新莊區',status:'active',records:11},
+    {id:6,name:'吳淑芬',code:'DC-0006',district:'永和區',status:'active',records:8},
+    {id:7,name:'黃志偉',code:'DC-0007',district:'土城區',status:'inactive',records:0},
+    {id:8,name:'蔡佳穎',code:'DC-0008',district:'蘆洲區',status:'active',records:6},
+  ];
+  localStorage.setItem('ntpc_roster', JSON.stringify(demo));
+  localStorage.setItem('ntpc_next_id', '9');
+}
+</script>
+</body>
+</html>

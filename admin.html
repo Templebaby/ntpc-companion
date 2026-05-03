@@ -622,7 +622,7 @@ function showPage(name){
   document.querySelector(`[onclick="showPage('${name}')"]`).classList.add('active');
   document.getElementById('topbar-title').textContent=pageTitles[name];
   if(name==='map'&&!mapInit){setTimeout(initMap,60);mapInit=true;}
-  if(name==='dashboard'){updateDashboard();}
+  if(name==='dashboard'){setTimeout(()=>updateDashboard(),50);}
   if(name==='records'){populateRecordFilters();filterRecords();}
   if(name==='roster'){renderRoster();}
   if(name==='faillog'){renderFailLog();}
@@ -1076,8 +1076,27 @@ function initDistrictSelects(){
 // ── 啟動 ──
 initDistrictSelects();
 renderColorPicks();
-renderTypeGrid();
-updateDashboard();
+
+// 先顯示「載入中」，等資料從試算表載入完成後再渲染
+loadAllData().then(() => {
+  renderTypeGrid();
+  populateRecordFilters();
+  renderRecordsTable(window._records || []);
+  renderRoster();
+  renderDistrictBars();
+  setTimeout(() => { updateDashboard(); }, 100);
+}).catch(e => {
+  console.error('資料載入失敗，使用示範資料', e);
+  window._roster  = DEMO_ROSTER.slice();
+  window._types   = DEFAULT_TYPES.slice();
+  window._records = [];
+  renderTypeGrid();
+  populateRecordFilters();
+  renderRecordsTable([]);
+  renderRoster();
+  renderDistrictBars();
+  setTimeout(() => { updateDashboard(); }, 100);
+});
 </script>
 </body>
 </html>

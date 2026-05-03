@@ -701,7 +701,7 @@ function renderDistrictBars(){
 }
 
 function renderCharts(){
-  const types=loadTypes();
+  const types=window._types||[];
   const colors=types.map((_,i)=>TYPE_COLORS[i%TYPE_COLORS.length]);
   const total=types.length;
   const vals=types.map((_,i)=>Math.round(100/total+(i%3===0?7:i%3===1?-3:0)));
@@ -758,7 +758,7 @@ function drawMapCircles(data){
 function filterMap(t){if(!t){drawMapCircles(GEO);return;}drawMapCircles(GEO.map(d=>({...d,count:Math.max(3,Math.round(d.count*(Math.random()*.4+.1)))})));}
 function syncMapTypeSelect(){
   const sel=document.getElementById('map-type-sel');
-  sel.innerHTML='<option value="">全部服務類型</option>'+loadTypes().map(t=>`<option>${t}</option>`).join('');
+  sel.innerHTML='<option value="">全部服務類型</option>'+(window._types||[]).map(t=>`<option>${t}</option>`).join('');
 }
 
 // ── 服務紀錄 ──
@@ -766,7 +766,7 @@ function populateRecordFilters(){
   const dist=document.getElementById('rf-dist');
   dist.innerHTML='<option value="">全部行政區</option>'+DISTRICTS.map(d=>`<option>${d}</option>`).join('');
   const type=document.getElementById('rf-type');
-  type.innerHTML='<option value="">全部類型</option>'+loadTypes().map(t=>`<option>${t}</option>`).join('');
+  type.innerHTML='<option value="">全部類型</option>'+(window._types||[]).map(t=>`<option>${t}</option>`).join('');
 }
 function filterRecords(){
   const d=document.getElementById('rf-dist').value;
@@ -797,7 +797,7 @@ function renderRecordsTable(recs){
   </tr>`).join('');
 }
 function exportCSV(){
-  const recs=loadRecords();
+  const recs=window._records||[];
   if(!recs.length){alert('目前沒有紀錄可匯出');return;}
   const headers=['日期','陪伴員','編號','行政區','社區機構','服務類型','年齡層','服務人數','服務時數','滿意度','狀態'];
   const rows=recs.map(r=>[r.date,r.name,r.code||'',r.district,r.community||'',r.type,r.age||'',r.count||1,r.hours,r.rating||'',r.status==='completed'?'已完成':'待審核']);
@@ -855,7 +855,7 @@ function addPerson(){
   const community=document.getElementById('r-community').value.trim();
   const msg=document.getElementById('r-msg');
   if(!name){msg.innerHTML='<span style="color:var(--red);">請輸入姓名</span>';return;}
-  const roster=loadRoster();
+  const roster=window._roster||[];
   if(roster.find(p=>p.name===name)){msg.innerHTML='<span style="color:var(--red);">此姓名已存在</span>';return;}
   const id=getNextId();
   const autoCode=code||`DC-${String(id).padStart(4,'0')}`;
@@ -889,7 +889,7 @@ function removePerson(id){
 function batchImport(){
   const raw=document.getElementById('paste-area').value.trim();
   if(!raw){return;}
-  const roster=loadRoster();
+  const roster=window._roster||[];
   let added=0,skipped=0;
   raw.split('\n').filter(l=>l.trim()).forEach(line=>{
     const parts=line.split(/[\t,，]/).map(s=>s.trim());
@@ -942,7 +942,7 @@ function showExcelPreview(rows,headers){
   const preview=document.getElementById('excel-preview');
   const label=document.getElementById('excel-preview-label');
   const table=document.getElementById('excel-preview-table');
-  const roster=loadRoster();
+  const roster=window._roster||[];
   label.textContent=`預覽：共 ${rows.length} 筆，將略過已存在的姓名`;
   const cols=headers||['姓名','編號','行政區','社區名稱'];
   table.innerHTML=`<thead><tr style="background:var(--gray-50);">${cols.map(c=>`<th style="padding:6px 10px;text-align:left;font-size:11px;color:var(--text-muted);border-bottom:1px solid var(--border);">${c}</th>`).join('')}<th style="padding:6px 10px;font-size:11px;color:var(--text-muted);border-bottom:1px solid var(--border);">狀態</th></tr></thead>`+
@@ -963,7 +963,7 @@ function clearExcelPreview(){
 }
 function confirmExcelImport(){
   if(!excelPendingRows.length){return;}
-  const roster=loadRoster();
+  const roster=window._roster||[];
   let added=0,skipped=0;
   excelPendingRows.forEach(r=>{
     const name=String(r[0]||'').trim();

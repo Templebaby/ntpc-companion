@@ -220,7 +220,7 @@ tr:hover td { background: var(--gray-50); }
 </head>
 <body>
 
-<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+<div class="sidebar-overlay" id="sidebar-overlay" id="sidebar-overlay"></div>
 <!-- 側邊欄 -->
 <nav class="sidebar">
   <div class="sidebar-logo">
@@ -229,28 +229,28 @@ tr:hover td { background: var(--gray-50); }
   </div>
   <div class="sidebar-nav">
     <div class="nav-section">主要功能</div>
-    <div class="nav-item active" onclick="showPage('dashboard')">
+    <div class="nav-item active" data-page="dashboard">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
       總覽儀表板
     </div>
-    <div class="nav-item" onclick="showPage('map')">
+    <div class="nav-item" data-page="map">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
       服務熱點地圖
     </div>
-    <div class="nav-item" onclick="showPage('records')">
+    <div class="nav-item" data-page="records">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
       服務紀錄
     </div>
     <div class="nav-section">管理</div>
-    <div class="nav-item" onclick="showPage('roster')">
+    <div class="nav-item" data-page="roster">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       陪伴員名單
     </div>
-    <div class="nav-item" onclick="showPage('settings')">
+    <div class="nav-item" data-page="settings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
       服務類型設定
     </div>
-    <div class="nav-item" onclick="showPage('faillog')">
+    <div class="nav-item" data-page="faillog">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
       姓名比對失敗紀錄
     </div>
@@ -266,7 +266,7 @@ tr:hover td { background: var(--gray-50); }
 <!-- 主內容 -->
 <div class="main">
   <div class="topbar">
-    <button class="mobile-topbar-btn" onclick="toggleSidebar()" aria-label="開啟選單">
+    <button class="mobile-topbar-btn" id="btn-hamburger" aria-label="開啟選單">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
     <span class="topbar-title" id="topbar-title">總覽儀表板</span>
@@ -331,7 +331,7 @@ tr:hover td { background: var(--gray-50); }
       <div class="card" style="margin-bottom:14px;">
         <div class="filter-row">
           <select id="map-month-sel"><option>2025 年 4 月</option><option>2025 年 3 月</option></select>
-          <select id="map-type-sel" onchange="filterMap(this.value)"><option value="">全部服務類型</option></select>
+          <select id="map-type-sel" id="map-type-sel"><option value="">全部服務類型</option></select>
           <div style="margin-left:auto;display:flex;gap:12px;font-size:12px;color:var(--text-muted);align-items:center;">
             <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#0C447C;margin-right:4px;vertical-align:middle;"></span>高（151+）</span>
             <span><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#378ADD;margin-right:4px;vertical-align:middle;"></span>中（51–150）</span>
@@ -358,8 +358,8 @@ tr:hover td { background: var(--gray-50); }
             <option value="pending">待審核</option>
           </select>
           <input type="month" id="rf-month" value="2025-04"/>
-          <button class="btn btn-outline" onclick="filterRecords()">篩選</button>
-          <button class="btn btn-primary" onclick="exportCSV()">匯出 CSV</button>
+          <button class="btn btn-outline" id="btn-filter-records">篩選</button>
+          <button class="btn btn-primary" id="btn-export-csv">匯出 CSV</button>
           <span style="margin-left:8px;font-size:12px;color:var(--text-muted);" id="rec-count"></span>
         </div>
         <div class="table-wrap">
@@ -417,7 +417,7 @@ tr:hover td { background: var(--gray-50); }
             <div style="font-size:12px;color:var(--text-muted);margin-bottom:5px;">社區名稱</div>
             <input type="text" id="r-community" placeholder="如：三民社區" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;"/>
           </div>
-          <button class="btn btn-primary" onclick="addPerson()" style="height:36px;">+ 新增</button>
+          <button class="btn btn-primary" id="btn-add-person" style="height:36px;">+ 新增</button>
         </div>
         <div id="r-msg" style="font-size:12px;margin-top:8px;min-height:18px;"></div>
       </div>
@@ -434,7 +434,7 @@ tr:hover td { background: var(--gray-50); }
             <label style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:var(--blue);color:white;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;font-weight:500;">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               選擇 Excel 檔案
-              <input type="file" id="excel-file" accept=".xlsx,.xls" style="display:none;" onchange="importExcel(this)"/>
+              <input type="file" id="excel-file" accept=".xlsx,.xls" style="display:none;" id="excel-file-input"/>
             </label>
             <span id="excel-filename" style="font-size:12px;color:var(--text-muted);">尚未選擇檔案</span>
           </div>
@@ -444,8 +444,8 @@ tr:hover td { background: var(--gray-50); }
               <table style="width:100%;font-size:12px;border-collapse:collapse;" id="excel-preview-table"></table>
             </div>
             <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
-              <button class="btn btn-primary" onclick="confirmExcelImport()">確認匯入</button>
-              <button class="btn btn-outline" onclick="clearExcelPreview()">取消</button>
+              <button class="btn btn-primary" id="btn-confirm-excel">確認匯入</button>
+              <button class="btn btn-outline" id="btn-clear-excel">取消</button>
               <span id="excel-import-msg" style="font-size:12px;color:var(--text-muted);"></span>
             </div>
           </div>
@@ -456,8 +456,8 @@ tr:hover td { background: var(--gray-50); }
           <div class="notice">從 Excel 複製「姓名、行政區、社區名稱」欄，直接貼入下方，每行一人，欄位用 Tab 或逗號分隔。</div>
           <textarea class="paste-area" id="paste-area" placeholder="王小明&#9;板橋區&#9;三民社區&#10;李美華&#9;三重區&#10;陳建國&#9;新店區&#9;中正社區&#10;張文雄&#9;新莊區"></textarea>
           <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
-            <button class="btn btn-primary" onclick="batchImport()">匯入名單</button>
-            <button class="btn btn-outline" onclick="document.getElementById('paste-area').value=''">清除</button>
+            <button class="btn btn-primary" id="btn-batch-import">匯入名單</button>
+            <button class="btn btn-outline" id="btn-clear-paste">清除</button>
             <span id="import-msg" style="font-size:12px;color:var(--text-muted);"></span>
           </div>
         </div>
@@ -472,7 +472,7 @@ tr:hover td { background: var(--gray-50); }
             <option value="active">服務中</option>
             <option value="inactive">暫停服務</option>
           </select>
-          <button class="btn btn-outline" onclick="exportRosterCSV()">匯出名單</button>
+          <button class="btn btn-outline" id="btn-export-roster">匯出名單</button>
           <span id="roster-count" style="font-size:12px;color:var(--text-muted);"></span>
         </div>
         <div class="table-wrap">
@@ -493,8 +493,8 @@ tr:hover td { background: var(--gray-50); }
       </div>
       <div class="card">
         <div class="filter-row" style="margin-bottom:14px;">
-          <button class="btn btn-outline" onclick="renderFailLog()">重新整理</button>
-          <button class="btn btn-danger" onclick="clearFailLog()">清除所有紀錄</button>
+          <button class="btn btn-outline" id="btn-refresh-faillog">重新整理</button>
+          <button class="btn btn-danger" id="btn-clear-faillog">清除所有紀錄</button>
           <span style="font-size:12px;color:var(--text-muted);margin-left:8px;" id="faillog-count"></span>
         </div>
         <div class="table-wrap">
@@ -520,11 +520,11 @@ tr:hover td { background: var(--gray-50); }
             style="flex:1;min-width:180px;max-width:280px;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;"
             onkeydown="if(event.key==='Enter')addType()"/>
           <div class="color-picks" id="cpicks"></div>
-          <button class="btn btn-primary" onclick="addType()">+ 新增</button>
+          <button class="btn btn-primary" id="btn-add-type">+ 新增</button>
         </div>
         <div class="type-grid" id="type-grid"></div>
         <div style="padding-top:14px;border-top:1px solid var(--border);text-align:right;">
-          <button class="btn btn-danger btn-sm" onclick="resetTypes()">還原預設服務類型</button>
+          <button class="btn btn-danger btn-sm" id="btn-reset-types">還原預設服務類型</button>
         </div>
       </div>
     </div>
@@ -619,7 +619,8 @@ function showPage(name){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
-  document.querySelector(`[onclick="showPage('${name}')"]`).classList.add('active');
+  var activeNav = document.querySelector('[data-page="'+name+'"]');
+  if(activeNav) activeNav.classList.add('active');
   document.getElementById('topbar-title').textContent=pageTitles[name];
   if(name==='map'&&!mapInit){setTimeout(initMap,60);mapInit=true;}
   if(name==='dashboard'){setTimeout(()=>updateDashboard(),50);}
@@ -841,8 +842,8 @@ function renderRoster(){
       <td>${p.records||0} 筆</td>
       <td>${statusBadge}</td>
       <td style="display:flex;gap:6px;padding:11px 12px;">
-        <button class="btn btn-outline btn-sm" onclick="toggleStatus(${p.id})">${p.status==='active'?'停用':'啟用'}</button>
-        <button class="btn btn-danger btn-sm" onclick="removePerson(${p.id})">刪除</button>
+        <button class="btn btn-outline btn-sm" data-action="toggle" data-id="${p.id}">${p.status==='active'?'停用':'啟用'}</button>
+        <button class="btn btn-danger btn-sm" data-action="remove" data-id="${p.id}">刪除</button>
       </td>
     </tr>`;
   }).join('');
@@ -1003,11 +1004,11 @@ function renderTypeGrid(){
     <div class="type-item">
       <div class="type-dot" style="background:${TYPE_COLORS[i%TYPE_COLORS.length]};"></div>
       <span class="type-name">${t}</span>
-      <button class="btn btn-danger btn-sm" onclick="delType(${i})">✕</button>
+      <button class="btn btn-danger btn-sm" data-action="del-type" data-idx="${i}">✕</button>
     </div>`).join('');
 }
 function renderColorPicks(){
-  document.getElementById('cpicks').innerHTML=TYPE_COLORS.map(c=>`<div class="cpick${c===selColor?' sel':''}" style="background:${c};" onclick="selColorFn('${c}')"></div>`).join('');
+  document.getElementById('cpicks').innerHTML=TYPE_COLORS.map(c=>`<div class="cpick${c===selColor?' sel':''}" style="background:${c};" data-action="pick-color" data-color="${c}"></div>`).join('');
 }
 function selColorFn(c){selColor=c;renderColorPicks();}
 function addType(){
@@ -1119,6 +1120,108 @@ window.selColorFn     = selColorFn;
 window.renderFailLog  = renderFailLog;
 window.clearFailLog   = clearFailLog;
 window.setRating      = typeof setRating !== 'undefined' ? setRating : undefined;
+
+// ══════════════════════════════════════════════
+// 事件綁定（取代 onclick，相容所有瀏覽器擴充功能）
+// ══════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', function() {
+
+  // 側邊欄導覽
+  document.querySelectorAll('.nav-item[data-page]').forEach(function(el) {
+    el.addEventListener('click', function() { showPage(this.dataset.page); });
+  });
+
+  // 漢堡選單
+  var btnHamburger = document.getElementById('btn-hamburger');
+  if (btnHamburger) btnHamburger.addEventListener('click', toggleSidebar);
+
+  var overlay = document.getElementById('sidebar-overlay');
+  if (overlay) overlay.addEventListener('click', closeSidebar);
+
+  // 地圖篩選
+  var mapTypeSel = document.getElementById('map-type-sel');
+  if (mapTypeSel) mapTypeSel.addEventListener('change', function() { filterMap(this.value); });
+
+  // 紀錄篩選
+  var btnFilterRec = document.getElementById('btn-filter-records');
+  if (btnFilterRec) btnFilterRec.addEventListener('click', filterRecords);
+
+  var btnExportCSV = document.getElementById('btn-export-csv');
+  if (btnExportCSV) btnExportCSV.addEventListener('click', exportCSV);
+
+  // 名單操作
+  var btnAddPerson = document.getElementById('btn-add-person');
+  if (btnAddPerson) btnAddPerson.addEventListener('click', addPerson);
+
+  var btnBatch = document.getElementById('btn-batch-import');
+  if (btnBatch) btnBatch.addEventListener('click', batchImport);
+
+  var btnClearPaste = document.getElementById('btn-clear-paste');
+  if (btnClearPaste) btnClearPaste.addEventListener('click', function() {
+    document.getElementById('paste-area').value = '';
+  });
+
+  var btnExportRoster = document.getElementById('btn-export-roster');
+  if (btnExportRoster) btnExportRoster.addEventListener('click', exportRosterCSV);
+
+  var btnRefreshRoster = document.getElementById('btn-refresh-roster');
+  if (btnRefreshRoster) btnRefreshRoster.addEventListener('click', renderRoster);
+
+  // Excel 匯入
+  var excelFileInput = document.getElementById('excel-file-input');
+  if (excelFileInput) excelFileInput.addEventListener('change', function() { importExcel(this); });
+
+  var btnConfirmExcel = document.getElementById('btn-confirm-excel');
+  if (btnConfirmExcel) btnConfirmExcel.addEventListener('click', confirmExcelImport);
+
+  var btnClearExcel = document.getElementById('btn-clear-excel');
+  if (btnClearExcel) btnClearExcel.addEventListener('click', clearExcelPreview);
+
+  // 服務類型
+  var btnAddType = document.getElementById('btn-add-type');
+  if (btnAddType) btnAddType.addEventListener('click', addType);
+
+  var newTypeInput = document.getElementById('new-type-input');
+  if (newTypeInput) newTypeInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') addType();
+  });
+
+  var btnResetTypes = document.getElementById('btn-reset-types');
+  if (btnResetTypes) btnResetTypes.addEventListener('click', resetTypes);
+
+  // 失敗紀錄
+  var btnRefreshFaillog = document.getElementById('btn-refresh-faillog');
+  if (btnRefreshFaillog) btnRefreshFaillog.addEventListener('click', renderFailLog);
+
+  var btnClearFaillog = document.getElementById('btn-clear-faillog');
+  if (btnClearFaillog) btnClearFaillog.addEventListener('click', clearFailLog);
+
+  // ── 事件委派：動態產生的元素（名單列表、類型、顏色）──
+  document.addEventListener('click', function(e) {
+    var el = e.target.closest('[data-action]');
+    if (!el) return;
+    var action = el.dataset.action;
+
+    if (action === 'toggle') { toggleStatus(Number(el.dataset.id)); }
+    if (action === 'remove') { removePerson(Number(el.dataset.id)); }
+    if (action === 'del-type') { delType(Number(el.dataset.idx)); }
+    if (action === 'pick-color') { selColorFn(el.dataset.color); }
+  });
+
+  // 搜尋欄即時過濾
+  var rosterQ = document.getElementById('roster-q');
+  if (rosterQ) rosterQ.addEventListener('input', renderRoster);
+
+  var rosterStatus = document.getElementById('roster-status');
+  if (rosterStatus) rosterStatus.addEventListener('change', renderRoster);
+
+  // 月份選單
+  var selMonth = document.getElementById('sel-month');
+  if (selMonth) selMonth.addEventListener('change', function() {});
+
+  console.log('✅ 所有事件監聽綁定完成');
+});
+
 </script>
 </body>
 </html>

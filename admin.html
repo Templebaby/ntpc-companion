@@ -360,7 +360,7 @@ tr:hover td { background: var(--gray-50); }
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>日期</th><th>陪伴員</th><th>編號</th><th>行政區</th><th>服務類型</th><th>人數</th><th>時數</th><th>滿意度</th><th>狀態</th><th>操作</th></tr></thead>
+            <thead><tr><th>日期</th><th>陪伴員</th><th>編號</th><th>行政區</th><th>服務類型</th><th>人數</th><th>時數</th><th>處理情況</th><th>滿意度</th><th>狀態</th><th>操作</th></tr></thead>
             <tbody id="records-tbody"></tbody>
           </table>
         </div>
@@ -1377,7 +1377,7 @@ async function loadAllData() {
         district: String(r.district||''), community: String(r.community||''),
         type: String(r.type||''), age: String(r.age||''),
         hours: Number(r.hours||0), count: Number(r.count||1),
-        notes: String(r.notes||''), rating: Number(r.rating||0),
+        notes: String(r.notes||''), result: String(r.result||''), resultLabel: String(r.resultLabel||''), rating: Number(r.rating||0),
         status: String(r.status||'completed'),
         createdAt: String(r.createdAt||'')
       };

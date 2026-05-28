@@ -368,7 +368,7 @@ body {
 
       <div class="field">
         <label>社區 / 機構名稱</label>
-        <input type="text" id="f-comm" placeholder="如：板橋三民社區活動中心"/>
+        <input type="text" id="f-comm" placeholder="如：板橋三民社區活動中心（選擇姓名後自動帶入）"/>
       </div>
 
       <div class="field">
@@ -620,6 +620,16 @@ function confirmPerson(p) {
   document.getElementById('name-hint').style.display = 'none';
   document.getElementById('sel-name').textContent = p.name;
   document.getElementById('sel-code').textContent = `編號：${p.code}${p.district ? '　' + p.district : ''}${p.community ? '　' + p.community : ''}`;
+  // 自動帶入社區名稱（鎖定，不可修改）
+  if (p.community) {
+    const commEl = document.getElementById('f-comm');
+    if (commEl) {
+      commEl.value = p.community;
+      commEl.readOnly = true;
+      commEl.style.background = 'var(--gray-100)';
+      commEl.style.color = 'var(--gray-600)';
+    }
+  }
   document.getElementById('verify-success').className = 'verify-result success';
   document.getElementById('e-person').classList.remove('show');
   // 自動預選行政區
@@ -651,6 +661,14 @@ function reenterName() {
   document.getElementById('btn-verify').disabled = false;
   document.getElementById('name-input').value = '';
   document.getElementById('name-input').focus();
+  // 清除自動帶入的社區名稱
+  const commEl = document.getElementById('f-comm');
+  if (commEl) {
+    commEl.value = '';
+    commEl.readOnly = false;
+    commEl.style.background = '';
+    commEl.style.color = '';
+  }
   document.getElementById('verify-success').className = 'verify-result';
   document.getElementById('verify-error').style.display = 'none';
   document.getElementById('verify-similar').style.display = 'none';

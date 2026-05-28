@@ -632,8 +632,15 @@ function confirmPerson(p) {
   }
   document.getElementById('verify-success').className = 'verify-result success';
   document.getElementById('e-person').classList.remove('show');
-  // 自動預選行政區
-  if (p.district) document.getElementById('f-dist').value = p.district;
+  // 自動帶入行政區並鎖定
+  if (p.district) {
+    const distEl = document.getElementById('f-dist');
+    if (distEl) {
+      distEl.value = p.district;
+      distEl.disabled = true;
+      distEl.style.background = 'var(--gray-100)';
+    }
+  }
 }
 
 function showError(msg) {
@@ -668,6 +675,13 @@ function reenterName() {
     commEl.readOnly = false;
     commEl.style.background = '';
     commEl.style.color = '';
+  }
+  // 解鎖行政區
+  const distEl = document.getElementById('f-dist');
+  if (distEl) {
+    distEl.value = '';
+    distEl.disabled = false;
+    distEl.style.background = '';
   }
   document.getElementById('verify-success').className = 'verify-result';
   document.getElementById('verify-error').style.display = 'none';

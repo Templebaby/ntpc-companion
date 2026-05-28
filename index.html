@@ -424,6 +424,17 @@ body {
       </div>
 
       <div class="field">
+        <label>處理情況<span class="req">*</span></label>
+        <select id="f-result">
+          <option value="">請選擇</option>
+          <option value="self">我自己順利解決問題</option>
+          <option value="assisted">經協助後解決</option>
+          <option value="unresolved">無法解決問題</option>
+        </select>
+        <div class="field-err" id="e-result">請選擇處理情況</div>
+      </div>
+
+      <div class="field">
         <label>服務摘要</label>
         <textarea id="f-notes" placeholder="請簡述本次服務內容、長輩學習情形、遇到的問題等…（可略過）"></textarea>
       </div>
@@ -682,6 +693,9 @@ function validate(step) {
     if (!document.getElementById('f-count').value) show('e-count'); else hide('e-count');
     if (!document.getElementById('f-hours').value) show('e-hours'); else hide('e-hours');
   }
+  if (step === 3) {
+    if (!document.getElementById('f-result').value) show('e-result'); else hide('e-result');
+  }
   return ok;
 }
 
@@ -710,6 +724,8 @@ async function submitForm() {
     count: parseInt(document.getElementById('f-count').value),
     hours: parseFloat(document.getElementById('f-hours').value),
     notes: document.getElementById('f-notes').value,
+    result: document.getElementById('f-result').value,
+    resultLabel: {'self':'我自己順利解決問題','assisted':'經協助後解決','unresolved':'無法解決問題'}[document.getElementById('f-result').value]||'',
     rating: rating,
     status: 'completed',
     createdAt: new Date().toISOString()
@@ -734,6 +750,7 @@ async function submitForm() {
     ['服務類型', rec.type],
     ['服務人數', rec.count + ' 人'],
     ['服務時數', rec.hours + ' 小時'],
+    ['處理情況', rec.resultLabel||'未填'],
     ['滿意度', rec.rating ? rec.rating + ' 分' : '未填'],
   ].map(([l,v]) => `<div class="summary-row"><span class="summary-label">${l}</span><span class="summary-val">${v}</span></div>`).join('');
 
@@ -749,7 +766,7 @@ async function submitForm() {
 function resetAll() {
   selectedPerson = null; rating = 0; currentStep = 1;
   reenterName();
-  ['f-date','f-dist','f-comm','f-type','f-age','f-count','f-hours','f-notes'].forEach(id => {
+  ['f-date','f-dist','f-comm','f-type','f-age','f-count','f-hours','f-notes','f-result'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   document.getElementById('f-date').valueAsDate = new Date();

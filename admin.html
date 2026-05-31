@@ -1023,6 +1023,7 @@ function renderRecordsTable(recs){
   if(!recs.length){tbody.innerHTML='';empty.style.display='block';document.getElementById('rec-count').textContent='';return;}
   empty.style.display='none';
   document.getElementById('rec-count').textContent=`共 ${recs.length} 筆`;
+  const resultMap={'self':'✅ 自行解決','assisted':'🤝 協助解決','unresolved':'❌ 無法解決'};
   tbody.innerHTML=recs.map(function(r){
     return '<tr>'
       +'<td>'+r.date+'</td>'
@@ -1032,7 +1033,8 @@ function renderRecordsTable(recs){
       +'<td><span class="badge badge-blue">'+r.type+'</span></td>'
       +'<td>'+(r.count||1)+'</td>'
       +'<td>'+r.hours+'h</td>'
-      +'<td>'+(r.rating?'★'.repeat(Number(r.rating)):'—')+'</td>'
+      +'<td style="font-size:12px;">'+(resultMap[r.result]||'—')+'</td>'
+      +'<td>'+(Number(r.rating)>0?'★'.repeat(Number(r.rating)):'—')+'</td>'
       +'<td><span class="badge '+(r.status==='completed'?'badge-green':'badge-amber')+'">'+(r.status==='completed'?'已完成':'待審核')+'</span></td>'
       +'<td><button class="btn btn-danger btn-sm" data-action="delete-record" data-id="'+r.id+'">刪除</button></td>'
       +'</tr>';
@@ -1129,6 +1131,7 @@ function renderRoster(){
       <td>${p.records||0} 筆</td>
       <td>${statusBadge}</td>
       <td style="display:flex;gap:6px;padding:11px 12px;">
+        <button class="btn btn-outline btn-sm" data-action="edit-person" data-id="${p.id}">編輯</button>
         <button class="btn btn-outline btn-sm" data-action="toggle" data-id="${p.id}">${p.status==='active'?'停用':'啟用'}</button>
         <button class="btn btn-danger btn-sm" data-action="remove" data-id="${p.id}">刪除</button>
       </td>
@@ -1165,6 +1168,78 @@ function removePerson(id){
   if(!confirm(`確定刪除「${p.name}」？此操作無法復原。`))return;
   saveRoster(r.filter(x=>x.id!==id));renderRoster();
 }
+function editPerson(id){
+  const roster = window._roster||[];
+  const p = roster.find(function(x){return x.id===id;});
+  if(!p) return;
+
+  // 建立編輯 Modal
+  var existing = document.getElementById('edit-modal');
+  if(existing) existing.remove();
+
+  var distOpts = ['板橋區','三重區','中和區','新莊區','新店區','永和區','土城區','蘆洲區',
+    '樹林區','汐止區','鶯歌區','泰山區','五股區','林口區','深坑區','八里區',
+    '淡水區','三峽區','瑞芳區','石碇區','坪林區','金山區','萬里區','貢寮區',
+    '雙溪區','平溪區','烏來區','三芝區','石門區']
+    .map(function(d){ return '<option value="'+d+'"'+(d===p.district?' selected':'')+'>'+d+'</option>'; }).join('');
+
+  var modal = document.createElement('div');
+  modal.id = 'edit-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;';
+  modal.innerHTML = `
+    <div style="background:white;border-radius:12px;padding:24px;width:420px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,.2);">
+      <h3 style="font-size:16px;font-weight:600;margin-bottom:16px;color:var(--text);">編輯陪伴員資料</h3>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">姓名（不可修改）</div>
+        <div style="padding:9px 12px;background:var(--gray-100);border-radius:8px;font-size:14px;color:var(--gray-600);">${p.name}</div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">編號（不可修改）</div>
+        <div style="padding:9px 12px;background:var(--gray-100);border-radius:8px;font-size:14px;color:var(--gray-600);">${p.code}</div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">行政區</div>
+        <select id="edit-district" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;">
+          <option value="">請選擇</option>${distOpts}
+        </select>
+      </div>
+      <div style="margin-bottom:20px;">
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">社區名稱</div>
+        <input type="text" id="edit-community" value="${p.community||''}" placeholder="如：三民社區"
+          style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;"/>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <button onclick="document.getElementById('edit-modal').remove()"
+          style="padding:9px 18px;font-size:14px;cursor:pointer;border-radius:8px;border:1px solid var(--border);background:none;">取消</button>
+        <button onclick="saveEditPerson(${id})"
+          style="padding:9px 18px;font-size:14px;cursor:pointer;border-radius:8px;border:none;background:var(--blue);color:white;font-weight:500;">儲存</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  // 點背景關閉
+  modal.addEventListener('click', function(e){ if(e.target===modal) modal.remove(); });
+}
+
+function saveEditPerson(id){
+  const district = document.getElementById('edit-district').value;
+  const community = document.getElementById('edit-community').value.trim();
+  const roster = window._roster||[];
+  const idx = roster.findIndex(function(p){return p.id===id;});
+  if(idx<0) return;
+
+  roster[idx].district = district;
+  roster[idx].community = community;
+  window._roster = roster;
+
+  api('saveRoster', roster).then(function(){
+    document.getElementById('edit-modal').remove();
+    renderRoster();
+    alert('✅ 已儲存「'+roster[idx].name+'」的資料');
+  }).catch(function(e){
+    alert('儲存失敗，請確認網路連線');
+  });
+}
+
 function batchImport(){
   const raw=document.getElementById('paste-area').value.trim();
   if(!raw){return;}

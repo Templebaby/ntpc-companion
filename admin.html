@@ -650,6 +650,10 @@ function updateDashboard(){
   // 累計時數
   const totalHours=recs.reduce((s,r)=>s+(Number(r.hours)||0),0);
 
+  // 更新右上角本月人次
+  var badge = document.getElementById('topbar-badge');
+  if(badge) badge.textContent='本月 '+totalCount.toLocaleString()+' 人次';
+
   document.getElementById('m-count').textContent=totalCount.toLocaleString();
   document.getElementById('m-count-sub').textContent=lastCount>0?`${growthStr} 較上月`:'本月累計';
   document.getElementById('m-hours').textContent=Math.round(totalHours).toLocaleString();
@@ -1478,6 +1482,7 @@ document.onclick = function(e) {
   var idx = Number(el.getAttribute('data-idx'));
   var color = el.getAttribute('data-color');
   if (action === 'delete-record') deleteRecord(id);
+  if (action === 'edit-person')   editPerson(Number(id));
   if (action === 'toggle')        toggleStatus(Number(id));
   if (action === 'remove')        removePerson(Number(id));
   if (action === 'del-type')      delType(idx);

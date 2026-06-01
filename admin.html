@@ -542,14 +542,23 @@ const DEMO_ROSTER = [
 ];
 
 function loadRoster(){return window._roster||[];}
-function saveRoster(r){window._roster=r;api('saveRoster',r).catch(function(e){console.error('儲存失敗',e);});}
+function saveRoster(r){
+  // 去除重複（以 id 為唯一識別）
+  var seen = {};
+  var unique = r.filter(function(p){
+    if(seen[p.id]) return false;
+    seen[p.id] = true;
+    return true;
+  });
+  window._roster = unique;
+  api('saveRoster', unique).catch(function(e){console.error('儲存失敗',e);});
+}
 function loadTypes(){return window._types&&window._types.length?window._types:DEFAULT_TYPES.slice();}
 function saveTypes(t){window._types=t;api('saveTypes',t.map(function(n,i){return{name:n,color:TYPE_COLORS[i%TYPE_COLORS.length]};})).catch(function(e){console.error('儲存失敗',e);});}
 function loadRecords(){return window._records||[];}
 function getNextId(){return window._nextId?window._nextId++:100;}
 
-// 若無資料，載入示範
-if(!localStorage.getItem('ntpc_roster')){saveRoster(DEMO_ROSTER);localStorage.setItem('ntpc_next_id','11');}
+// 資料從 Google 試算表載入，不使用 localStorage
 
 // ── 頁面切換 ──
 const pageTitles = {dashboard:'總覽儀表板',map:'服務熱點地圖',records:'服務紀錄',roster:'陪伴員名單管理',settings:'服務類型設定'};

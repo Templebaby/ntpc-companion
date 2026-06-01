@@ -1172,14 +1172,18 @@ function addPerson(){
   renderRoster();
 }
 function toggleStatus(id){
-  const r=loadRoster();
+  const r=window._roster||[];
   const idx=r.findIndex(p=>p.id===id);
-  if(idx>=0){r[idx].status=r[idx].status==='active'?'inactive':'active';saveRoster(r);renderRoster();}
+  if(idx>=0){r[idx].status=r[idx].status==='active'?'inactive':'active';window._roster=r;saveRoster(r);renderRoster();}
 }
 function removePerson(id){
-  const r=loadRoster();const p=r.find(x=>x.id===id);
-  if(!confirm(`確定刪除「${p.name}」？此操作無法復原。`))return;
-  saveRoster(r.filter(x=>x.id!==id));renderRoster();
+  const r=window._roster||[];
+  const p=r.find(x=>x.id===id);
+  if(!p||!confirm('確定刪除「'+p.name+'」？此操作無法復原。'))return;
+  const newR=r.filter(x=>x.id!==id);
+  window._roster=newR;
+  saveRoster(newR);
+  renderRoster();
 }
 function editPerson(id){
   const roster = window._roster||[];
@@ -1229,8 +1233,13 @@ function editPerson(id){
       </div>
     </div>`;
   document.body.appendChild(modal);
+  // 直接綁定按鈕（不用事件委派，確保一定觸發）
+  document.getElementById('edit-cancel-btn').onclick = function(){ modal.remove(); };
+  document.getElementById('edit-save-btn').onclick = function(){
+    saveEditPerson(Number(this.getAttribute('data-edit-id')));
+  };
   // 點背景關閉
-  modal.addEventListener('click', function(e){ if(e.target===modal) modal.remove(); });
+  modal.onclick = function(e){ if(e.target===modal) modal.remove(); };
 }
 
 function saveEditPerson(id){
